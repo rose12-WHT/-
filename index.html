@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>澳洲超市收銀 - 找零心算練習</title>
+  <style>
+    :root {
+      --bg: #f3f4f6;
+      --card-bg: #ffffff;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success: #16a34a;
+      --error: #dc2626;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 24px 20px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    header {
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 8px;
+      text-align: center;
+    }
+
+    .stat-item .label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+
+    .stat-item .val {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .mode-selector {
+      display: flex;
+      background: #e5e7eb;
+      padding: 4px;
+      border-radius: 10px;
+      gap: 4px;
+    }
+
+    .mode-btn {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      background: transparent;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .mode-btn.active {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    }
+
+    .display-screen {
+      background: #0f172a;
+      border-radius: 16px;
+      padding: 18px 20px;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .row-label {
+      font-size: 0.85rem;
+      color: #94a3b8;
+    }
+
+    .row-val {
+      font-size: 1.15rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .row-val.cash-pay {
+      font-size: 1.4rem;
+      color: #38bdf8;
+      font-weight: 700;
+    }
+
+    .divider {
+      height: 1px;
+      background: #334155;
+      margin: 4px 0;
+    }
+
+    .input-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .input-box {
+      width: 100%;
+      height: 52px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      font-size: 1.6rem;
+      font-weight: 700;
+      text-align: center;
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.2s;
+      background: #fff;
+    }
+
+    .input-box:focus {
+      border-color: var(--primary);
+    }
+
+    .feedback {
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 6px 12px;
+    }
+
+    .feedback.success {
+      background: #dcfce7;
+      color: var(--success);
+    }
+
+    .feedback.error {
+      background: #fee2e2;
+      color: var(--error);
+    }
+
+    /* 數字鍵盤 */
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .key {
+      height: 54px;
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 12px;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      user-select: none;
+      box-shadow: 0 2px 2px rgba(0,0,0,0.03);
+      transition: background 0.1s, transform 0.05s;
+    }
+
+    .key:active {
+      background: #e5e7eb;
+      transform: scale(0.97);
+    }
+
+    .key.action-del {
+      background: #f3f4f6;
+      color: #4b5563;
+      font-size: 1rem;
+    }
+
+    .key.action-submit {
+      background: var(--primary);
+      color: #fff;
+      grid-column: span 3;
+      height: 48px;
+      margin-top: 4px;
+      font-size: 1.1rem;
+    }
+
+    .key.action-submit:hover {
+      background: var(--primary-hover);
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>澳洲超市找零練習 🇦🇺</h1>
+  </header>
+
+  <!-- 模式切換 -->
+  <div class="mode-selector">
+    <button class="mode-btn active" id="modeStandard" onclick="setMode('standard')">基礎模式</button>
+    <button class="mode-btn" id="modeRealistic" onclick="setMode('realistic')">進階實戰 (含零錢)</button>
+  </div>
+
+  <!-- 數據面板 -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <div class="label">連續答對</div>
+      <div class="val" id="statStreak">0</div>
+    </div>
+    <div class="stat-item">
+      <div class="label">答對率</div>
+      <div class="val" id="statAccuracy">0%</div>
+    </div>
+    <div class="stat-item">
+      <div class="label">本次用時</div>
+      <div class="val" id="statTimer">0.0s</div>
+    </div>
+  </div>
+
+  <!-- 題目顯示區 -->
+  <div class="display-screen">
+    <div class="row">
+      <span class="row-label">原價總額 (Total Due)</span>
+      <span class="row-val" id="displayTotal">$0.00</span>
+    </div>
+    <div class="row">
+      <span class="row-label">現金應付 (5c Rounding)</span>
+      <span class="row-val" id="displayRounded" style="color: #fbbf24;">$0.00</span>
+    </div>
+    <div class="divider"></div>
+    <div class="row">
+      <span class="row-label" style="align-self: center;">顧客實付 (Cash Given)</span>
+      <span class="row-val cash-pay" id="displayTendered">$0.00</span>
+    </div>
+  </div>
+
+  <!-- 輸入框與回饋訊息 -->
+  <div class="input-section">
+    <input type="text" id="userInput" class="input-box" placeholder="應找金額 $" readonly inputmode="decimal">
+    <div class="feedback" id="feedback">請計算應找零錢並送出</div>
+  </div>
+
+  <!-- 虛擬數字鍵盤 -->
+  <div class="keypad">
+    <button class="key" onclick="appendInput('7')">7</button>
+    <button class="key" onclick="appendInput('8')">8</button>
+    <button class="key" onclick="appendInput('9')">9</button>
+    <button class="key" onclick="appendInput('4')">4</button>
+    <button class="key" onclick="appendInput('5')">5</button>
+    <button class="key" onclick="appendInput('6')">6</button>
+    <button class="key" onclick="appendInput('1')">1</button>
+    <button class="key" onclick="appendInput('2')">2</button>
+    <button class="key" onclick="appendInput('3')">3</button>
+    <button class="key" onclick="appendInput('.')">.</button>
+    <button class="key" onclick="appendInput('0')">0</button>
+    <button class="key action-del" onclick="deleteInput()">⌫ 刪除</button>
+    <button class="key action-submit" onclick="submitAnswer()">確認送出 (Enter)</button>
+  </div>
+</div>
+
+<script>
+  // 核心變數
+  let currentMode = 'standard';
+  let totalCents = 0;
+  let roundedCents = 0;
+  let tenderedCents = 0;
+  let correctChangeCents = 0;
+
+  let streak = 0;
+  let totalAttempts = 0;
+  let totalCorrect = 0;
+  let startTime = null;
+  let timerInterval = null;
+
+  // 澳洲 5c 瑞典式捨入規則 (Swedish Rounding)
+  function roundTo5Cents(cents) {
+    const rem = cents % 10;
+    if (rem === 1 || rem === 2) return cents - rem;
+    if (rem === 3 || rem === 4) return cents + (5 - rem);
+    if (rem === 6 || rem === 7) return cents - (rem - 5);
+    if (rem === 8 || rem === 9) return cents + (10 - rem);
+    return cents;
+  }
+
+  function setMode(mode) {
+    currentMode = mode;
+    document.getElementById('modeStandard').classList.toggle('active', mode === 'standard');
+    document.getElementById('modeRealistic').classList.toggle('active', mode === 'realistic');
+    nextQuestion();
+  }
+
+  function formatMoney(cents) {
+    return '$' + (cents / 100).toFixed(2);
+  }
+
+  // 生成合理的實付金額
+  function generateTendered(rounded) {
+    const bills = [500, 1000, 2000, 5000, 10000]; // 澳幣大鈔 cents: 5, 10, 20, 50, 100
+
+    if (currentMode === 'standard') {
+      // 基礎模式：只給剛好大於應付金額的下一檔大鈔
+      for (let b of bills) {
+        if (b >= rounded) return b;
+      }
+      return Math.ceil(rounded / 5000) * 5000;
+    } else {
+      // 進階模式：模擬顧客現實湊零錢行為
+      const dice = Math.random();
+      const roundedRem = rounded % 100; // 零錢部分
+
+      // 40% 機率直接給單純大鈔
+      if (dice < 0.4) {
+        for (let b of bills) {
+          if (b >= rounded) return b;
+        }
+      }
+
+      // 35% 機率大鈔 + 尾數零錢 (例: $13.40 給 $20.40 或 $23.40 為了換整鈔)
+      if (dice >= 0.4 && dice < 0.75) {
+        let baseBill = bills.find(b => b > rounded) || (Math.ceil(rounded / 2000) * 2000);
+        let tendered = baseBill + roundedRem;
+        if (tendered > rounded) return tendered;
+      }
+
+      // 25% 機率大鈔 + 剛好多給 5c/10c/50c/100c/200c 湊硬幣
+      const extraCoins = [5, 10, 20, 50, 100, 200];
+      const extra = extraCoins[Math.floor(Math.random() * extraCoins.length)];
+      let baseBill = bills.find(b => b >= rounded) || (Math.ceil(rounded / 2000) * 2000);
+      return baseBill + extra;
+    }
+  }
+
+  function nextQuestion() {
+    clearInterval(timerInterval);
+    document.getElementById('userInput').value = '';
+
+    // 生成原價 ($1.00 ~ $95.00 隨機分位)
+    if (currentMode === 'standard') {
+      // 基礎題：原價直接是 5c 或 10c 結尾，金額偏向常見價格
+      totalCents = (Math.floor(Math.random() * 80) + 2) * 100 + (Math.floor(Math.random() * 20) * 5);
+      roundedCents = totalCents;
+    } else {
+      // 實戰題：包含 1c ~ 9c 各種隨機尾數
+      totalCents = Math.floor(Math.random() * 9000) + 105;
+      roundedCents = roundTo5Cents(totalCents);
+    }
+
+    tenderedCents = generateTendered(roundedCents);
+    correctChangeCents = tenderedCents - roundedCents;
+
+    // 介面渲染
+    document.getElementById('displayTotal').innerText = formatMoney(totalCents);
+    document.getElementById('displayRounded').innerText = formatMoney(roundedCents);
+    document.getElementById('displayTendered').innerText = formatMoney(tenderedCents);
+
+    // 開始計時
+    startTime = Date.now();
+    timerInterval = setInterval(() => {
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+      document.getElementById('statTimer').innerText = `${elapsed}s`;
+    }, 100);
+  }
+
+  function appendInput(char) {
+    const input = document.getElementById('userInput');
+    if (char === '.' && input.value.includes('.')) return;
+    input.value += char;
+  }
+
+  function deleteInput() {
+    const input = document.getElementById('userInput');
+    input.value = input.value.slice(0, -1);
+  }
+
+  function submitAnswer() {
+    const inputStr = document.getElementById('userInput').value.trim();
+    if (!inputStr) return;
+
+    clearInterval(timerInterval);
+    const finalTime = ((Date.now() - startTime) / 1000).toFixed(1);
+
+    // 轉成 cents 比對避免浮點數誤差
+    const userValCents = Math.round(parseFloat(inputStr) * 100);
+    const feedbackEl = document.getElementById('feedback');
+
+    totalAttempts++;
+
+    if (userValCents === correctChangeCents) {
+      streak++;
+      totalCorrect++;
+      feedbackEl.className = 'feedback success';
+      feedbackEl.innerHTML = `✓ 正確！耗時 ${finalTime} 秒 (${formatMoney(tenderedCents)} - ${formatMoney(roundedCents)} = ${formatMoney(correctChangeCents)})`;
+      updateStats();
+      setTimeout(nextQuestion, 1200);
+    } else {
+      streak = 0;
+      feedbackEl.className = 'feedback error';
+      feedbackEl.innerHTML = `✕ 答錯了！正確應找：${formatMoney(correctChangeCents)}<br><small>${formatMoney(tenderedCents)} - ${formatMoney(roundedCents)} = ${formatMoney(correctChangeCents)}</small>`;
+      updateStats();
+      setTimeout(nextQuestion, 2400);
+    }
+  }
+
+  function updateStats() {
+    document.getElementById('statStreak').innerText = streak;
+    const acc = Math.round((totalCorrect / totalAttempts) * 100) || 0;
+    document.getElementById('statAccuracy').innerText = `${acc}%`;
+  }
+
+  // 實體鍵盤監聽
+  window.addEventListener('keydown', (e) => {
+    if ((e.key >= '0' && e.key <= '9') || e.key === '.') {
+      appendInput(e.key);
+    } else if (e.key === 'Backspace') {
+      deleteInput();
+    } else if (e.key === 'Enter') {
+      submitAnswer();
+    }
+  });
+
+  // 初始化第一題
+  nextQuestion();
+</script>
+
+</body>
+</html>
